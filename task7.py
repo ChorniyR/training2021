@@ -10,6 +10,6 @@ def find_prefix(strs):
         i += 1
         prefix = str[:i]
         
-print(find_prefix(["floower","floow","flwight"]))
+print(find_prefix(["gfloower","floow","flwight"]))
 
     

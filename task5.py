@@ -1,11 +1,8 @@
 def find_single(nums):
+    counts = {}
     for key in nums:
-        counter = 0
-        for num in nums:
-            if num == key:
-                counter += 1
-        if counter == 1:
-            return key
+        counts[key] = nums.count(key)
+    return min(counts, key=counts.get)
 
 
-print(find_single([2, 1, 1, 3, 3]))
+print(find_single([2, 2, 2, 1, 1, 3, 3, 7]))

@@ -1,5 +1,7 @@
+import random
+import re
+import string
 from abc import ABC, abstractmethod
-from itertools import product
 
 
 class Converter(ABC):
@@ -16,6 +18,7 @@ class Converter(ABC):
         try:
             with open(self._path) as file:
                 self._lines = file.readlines()
+                self._format_lines()
         except FileNotFoundError:
             print("File not found")
             pass
@@ -23,6 +26,10 @@ class Converter(ABC):
     @abstractmethod
     def write(self):
         pass
+
+    def _format_lines(self):
+        for index, line in enumerate(self._lines):
+            self._lines[index] = line.strip("\n")
 
 
 class JSONHandler(Converter):
@@ -65,7 +72,6 @@ class SCVHandler(Converter):
         data = []
         for index, line in enumerate(self._lines):
             if index > 0:
-                # pairs = [{title: cell} for cell in line.split(",") for title in self._titles]
                 object_ = {}
                 for i in range(0, len(line.split(","))):
                     try:
@@ -79,8 +85,22 @@ class SCVHandler(Converter):
     def parse_titles(self):
         return tuple(self._lines[0].split(","))
 
+    @staticmethod
+    def _find_coll_patterns(line):
+        separator = "qwe"
+        new_line = line.replace('""', '"').replace('""', separator)
+        try:
+            str_patterns = re.search(r"qwe(.*)qwe", new_line).group().strip(separator)
+            return str_patterns
+        except AttributeError:
+            new_lines = line.replace('"', separator)
+            str_patterns = re.findall(r'qwe(.*)qwe', new_lines)
+            return str_patterns
+
 
 if __name__ == '__main__':
     scv_handler = SCVHandler(".\data\data_file.scv")
     for obj in scv_handler.read():
         print(obj)
+
+

@@ -1,2 +1,4 @@
 Lead,Title,Phone,Notes,Bool value, Else,One more, last
+Jim Grayson,"Spoke Tuesday, he's interested", Senior Manager,(555)761-2385, True, vass, "Spoke Tuesday, he's interested", (555)761-2385
+Prescilla Winston,Development Director,(555)218-3981,said to call again next week, False, nass, "Spoke Tuesday, he's interested", (555)761-2385
 Melissa Potter,Head of Accounts,(555)791-3471,"Not interested, gave referral", None, ihh, "Spoke Tuesday, he's interested", (555)761-2385

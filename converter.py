@@ -112,6 +112,12 @@ class SCVHandler(Converter):
     def parse_titles(self):
         return tuple(self._lines[0].split(","))
 
+    def __getitem__(self, item):
+        for obj in self:
+            for key, value in obj.items():
+                if key == item:
+                    yield value
+
     @staticmethod
     def find_collect_patterns(line):
         patterns = []
@@ -136,5 +142,3 @@ class SCVHandler(Converter):
 
 if __name__ == '__main__':
     scv_handler = SCVHandler(r"data/data_file.scv")
-    for i in scv_handler:
-        print(i)

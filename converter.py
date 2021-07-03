@@ -56,7 +56,7 @@ class SCVHandler(Converter):
         self._path = path
         self._lines = None
         self._titles = None
-        self._data = self.read()
+        self._objects = self.read()
 
     def convert(self):
         pass
@@ -71,7 +71,7 @@ class SCVHandler(Converter):
         for index, line in enumerate(self._lines):
             if index > 0:
                 object_ = {}
-                coll_patterns = self._find_collect_patterns(line)
+                coll_patterns = self.find_collect_patterns(line)
                 if not coll_patterns:
                     for i in range(0, len(line.split(","))):
                         try:
@@ -80,20 +80,30 @@ class SCVHandler(Converter):
                             print("Index out of range")
                     data.append(object_)
                 else:
-                    i = 0
+                    title_idx = 0
+                    zeroing = True
                     for part in line.split('"'):
+                        value_idx = 0
                         if part not in coll_patterns:
-                            for p in part.split(","):
-                                if p != "":
+                            for value in part.split(","):
+                                if value.replace(" ", "") != "":
                                     try:
-                                        object_.update({self._titles[i]: part.split(",")[i]})
-                                        i += 1
+                                        if part.split(",")[value_idx] != '':
+                                            object_.update({self._titles[title_idx]: part.split(",")[value_idx]})
+                                            value_idx += 1
+                                            title_idx += 1
+                                        else:
+                                            object_.update({self._titles[title_idx]: part.split(",")[value_idx + 1]})
+                                            value_idx += 1
+                                            title_idx += 1
                                     except IndexError:
                                         pass
                         else:
                             try:
-                                object_.update({self._titles[i]: part})
-                                i += 1
+                                object_.update({self._titles[title_idx]: part})
+                                value_idx += 1
+                                title_idx += 1
+                                zeroing = False
                             except IndexError:
                                 pass
                     data.append(object_)
@@ -103,22 +113,28 @@ class SCVHandler(Converter):
         return tuple(self._lines[0].split(","))
 
     @staticmethod
-    def _find_collect_patterns(line):
-        separator = "qwe"
-        new_line = line.replace('""', '"').replace('""', separator)
-        try:
-            str_patterns = re.search(r"qwe(.*)qwe", new_line).group().strip(separator)
-            return str_patterns
-        except AttributeError:
-            new_lines = line.replace('"', separator)
-            str_patterns = re.findall(r'qwe(.*)qwe', new_lines)
-            return str_patterns
+    def find_collect_patterns(line):
+        patterns = []
+        pattern = ""
+        opened = False
+        for symb in line:
+            if opened:
+                pattern += symb
+
+            if symb == '"':
+                if opened:
+                    opened = False
+                    patterns.append(pattern.replace('"', ''))
+                    pattern = ""
+                elif not opened:
+                    opened = True
+        return patterns
 
     def __iter__(self):
-        return iter(self._data)
+        return iter(self._objects)
 
 
 if __name__ == '__main__':
-    scv_handler = SCVHandler(r".\data\data_file.scv")
+    scv_handler = SCVHandler(r"data/data_file.scv")
     for i in scv_handler:
         print(i)

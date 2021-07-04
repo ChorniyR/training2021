@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 class Converter(ABC):
     def __init__(self):
-        self._path = None
+        self._input_file = None
         self._lines = None
 
     @abstractmethod
@@ -16,7 +16,7 @@ class Converter(ABC):
     @abstractmethod
     def read(self):
         try:
-            with open(self._path) as file:
+            with open(self._input_file) as file:
                 self._lines = file.readlines()
                 self._format_lines()
         except FileNotFoundError:
@@ -52,17 +52,38 @@ class JSONHandler(Converter):
 
 
 class SCVHandler(Converter):
-    def __init__(self, path):
-        self._path = path
+    def __init__(self, input_file, output_file):
+        self._input_file = input_file
+        self._output_file = output_file
         self._lines = None
         self._titles = None
         self._objects = self.read()
+        self._converted = self.convert()
 
     def convert(self):
-        pass
+        result_string = ""
+        if len(self) > 1:
+            result_string += "[ \n"
+            for obj in self:
+                result_string += "{ \n"
+                for key, value in obj.items():
+                    result_string += f'"{key}": "{value}", \n'
+                result_string = result_string[0:-3] + " \n"
+                result_string += "}, \n"
+            result_string = result_string[0:-3] + " \n"
+            result_string += "] \n"
+        else:
+            for obj in self:
+                result_string += "{ \n"
+                for key, value in obj.items():
+                    result_string += f'"{key}": "{value}", \n'
+                result_string = result_string[0:-3] + " \n"
+                result_string += "} \n"
+        return result_string
 
     def write(self):
-        pass
+        with open(self._output_file, "w") as file:
+            file.write(self._converted)
 
     def read(self):
         super().read()
@@ -71,7 +92,7 @@ class SCVHandler(Converter):
         for index, line in enumerate(self._lines):
             if index > 0:
                 object_ = {}
-                coll_patterns = self.find_collect_patterns(line)
+                coll_patterns = self._find_collect_patterns(line)
                 if not coll_patterns:
                     for i in range(0, len(line.split(","))):
                         try:
@@ -81,7 +102,6 @@ class SCVHandler(Converter):
                     data.append(object_)
                 else:
                     title_idx = 0
-                    zeroing = True
                     for part in line.split('"'):
                         value_idx = 0
                         if part not in coll_patterns:
@@ -103,7 +123,6 @@ class SCVHandler(Converter):
                                 object_.update({self._titles[title_idx]: part})
                                 value_idx += 1
                                 title_idx += 1
-                                zeroing = False
                             except IndexError:
                                 pass
                     data.append(object_)
@@ -112,14 +131,8 @@ class SCVHandler(Converter):
     def parse_titles(self):
         return tuple(self._lines[0].split(","))
 
-    def __getitem__(self, item):
-        for obj in self:
-            for key, value in obj.items():
-                if key == item:
-                    yield value
-
     @staticmethod
-    def find_collect_patterns(line):
+    def _find_collect_patterns(line):
         patterns = []
         pattern = ""
         opened = False
@@ -139,6 +152,20 @@ class SCVHandler(Converter):
     def __iter__(self):
         return iter(self._objects)
 
+    def __getitem__(self, item):
+        for obj in self:
+            for key, value in obj.items():
+                if key == item:
+                    yield value
+
+    def __len__(self):
+        return len(self._objects)
+
+
+def convert(input_file, output_file):
+    scv_handler = SCVHandler(input_file, output_file)
+    scv_handler.write()
+
 
 if __name__ == '__main__':
-    scv_handler = SCVHandler(r"data/data_file.scv")
+    convert(r"data/data_file.scv", "converted.json")

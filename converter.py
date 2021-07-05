@@ -3,31 +3,17 @@ from abc import ABC, abstractmethod
 
 
 class Converter(ABC):
-    def __init__(self):
-        self._input_file = None
-        self._lines = None
-
     @abstractmethod
     def convert(self):
         pass
 
     @abstractmethod
     def read(self):
-        try:
-            with open(self._input_file) as file:
-                self._lines = file.readlines()
-                self._format_lines()
-        except FileNotFoundError:
-            print("File not found")
-            pass
+        pass
 
     @abstractmethod
     def write(self):
         pass
-
-    def _format_lines(self):
-        for index, line in enumerate(self._lines):
-            self._lines[index] = line.strip("\n")
 
 
 class SCVHandler(Converter):
@@ -36,7 +22,7 @@ class SCVHandler(Converter):
         self._output_file = output_file
         self._lines = None
         self._titles = None
-        self._objects = self.read()
+        self._objects = self.parse()
         self._converted = self.convert()
 
     def convert(self):
@@ -64,8 +50,8 @@ class SCVHandler(Converter):
         with open(self._output_file, "w") as file:
             file.write(self._converted)
 
-    def read(self):
-        super().read()
+    def parse(self):
+        self.read()
         self._titles = self.parse_titles()
         data = []
         for index, line in enumerate(self._lines):
@@ -107,6 +93,14 @@ class SCVHandler(Converter):
                     data.append(object_)
         return data
 
+    def read(self):
+        try:
+            with open(self._input_file) as file:
+                self._lines = file.readlines()
+                self._format_lines()
+        except FileNotFoundError:
+            print("File not found")
+
     def parse_titles(self):
         return tuple(self._lines[0].split(","))
 
@@ -127,6 +121,10 @@ class SCVHandler(Converter):
                 elif not opened:
                     opened = True
         return patterns
+
+    def _format_lines(self):
+        for index, line in enumerate(self._lines):
+            self._lines[index] = line.strip("\n")
 
     def __iter__(self):
         return iter(self._objects)

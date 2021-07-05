@@ -1,6 +1,4 @@
-import random
-import re
-import string
+import argparse
 from abc import ABC, abstractmethod
 
 
@@ -92,7 +90,7 @@ class SCVHandler(Converter):
         for index, line in enumerate(self._lines):
             if index > 0:
                 object_ = {}
-                coll_patterns = self._find_collect_patterns(line)
+                coll_patterns = self._find_collection_patterns(line)
                 if not coll_patterns:
                     for i in range(0, len(line.split(","))):
                         try:
@@ -132,7 +130,7 @@ class SCVHandler(Converter):
         return tuple(self._lines[0].split(","))
 
     @staticmethod
-    def _find_collect_patterns(line):
+    def _find_collection_patterns(line):
         patterns = []
         pattern = ""
         opened = False
@@ -168,4 +166,10 @@ def convert(input_file, output_file):
 
 
 if __name__ == '__main__':
-    convert(r"data/data_file.scv", "converted.json")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input_file')
+    parser.add_argument('output_file')
+    input_file = parser.parse_args().input_file
+    output_file = parser.parse_args().output_file
+    # convert(r"data/data_file.scv", "converted.json")
+    convert(input_file, output_file)

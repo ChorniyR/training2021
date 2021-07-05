@@ -30,25 +30,6 @@ class Converter(ABC):
             self._lines[index] = line.strip("\n")
 
 
-class JSONHandler(Converter):
-    def __init__(self, path):
-        self._path = path
-        self._lines = None
-
-    def write(self):
-        try:
-            with open(self._path) as file:
-                pass
-        except FileExistsError:
-            pass
-
-    def read(self):
-        pass
-
-    def convert(self):
-        pass
-
-
 class SCVHandler(Converter):
     def __init__(self, input_file, output_file):
         self._input_file = input_file

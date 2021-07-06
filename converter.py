@@ -1,5 +1,6 @@
 import argparse
 from abc import ABC, abstractmethod
+from itertools import islice
 
 
 class Converter(ABC):
@@ -54,43 +55,35 @@ class SCVHandler(Converter):
         self.read()
         self._titles = self.parse_titles()
         data = []
-        for index, line in enumerate(self._lines):
-            if index > 0:
-                object_ = {}
-                coll_patterns = self._find_collection_patterns(line)
-                if not coll_patterns:
-                    for i in range(0, len(line.split(","))):
-                        try:
-                            object_.update({self._titles[i]: line.split(",")[i]})
-                        except IndexError:
-                            print("Index out of range")
-                    data.append(object_)
-                else:
-                    title_idx = 0
-                    for part in line.split('"'):
-                        value_idx = 0
-                        if part not in coll_patterns:
-                            for value in part.split(","):
-                                if value.replace(" ", "") != "":
-                                    try:
-                                        if part.split(",")[value_idx] != '':
-                                            object_.update({self._titles[title_idx]: part.split(",")[value_idx]})
-                                            value_idx += 1
-                                            title_idx += 1
-                                        else:
-                                            object_.update({self._titles[title_idx]: part.split(",")[value_idx + 1]})
-                                            value_idx += 1
-                                            title_idx += 1
-                                    except IndexError:
-                                        pass
-                        else:
+        for index, line in enumerate(islice(self._lines, 1, None)):
+            object_ = {}
+            coll_patterns = self._find_collection_patterns(line)
+
+            title_idx = 0
+            for part in line.split('"'):
+                value_idx = 0
+                if part not in coll_patterns:
+                    for value in part.split(","):
+                        if value.replace(" ", "") != "":
                             try:
-                                object_.update({self._titles[title_idx]: part})
-                                value_idx += 1
-                                title_idx += 1
+                                if part.split(",")[value_idx] != '':
+                                    object_.update({self._titles[title_idx]: part.split(",")[value_idx]})
+                                    value_idx += 1
+                                    title_idx += 1
+                                else:
+                                    object_.update({self._titles[title_idx]: part.split(",")[value_idx + 1]})
+                                    value_idx += 1
+                                    title_idx += 1
                             except IndexError:
                                 pass
-                    data.append(object_)
+                else:
+                    try:
+                        object_.update({self._titles[title_idx]: part})
+                        value_idx += 1
+                        title_idx += 1
+                    except IndexError:
+                        pass
+            data.append(object_)
         return data
 
     def read(self):
@@ -150,5 +143,6 @@ if __name__ == '__main__':
     parser.add_argument('output_file')
     input_file = parser.parse_args().input_file
     output_file = parser.parse_args().output_file
-    # convert(r"data/data_file.scv", "converted.json")
     convert(input_file, output_file)
+    # convert(r"data/data_file.scv", "converted.json")
+

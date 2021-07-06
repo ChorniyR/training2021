@@ -59,28 +59,24 @@ class SCVHandler(Converter):
             object_ = {}
             coll_patterns = self._find_collection_patterns(line)
 
-            title_idx = 0
+            titles = list(self._titles)
             for part in line.split('"'):
-                value_idx = 0
                 if part not in coll_patterns:
                     for value in part.split(","):
                         if value.replace(" ", "") != "":
                             try:
-                                if part.split(",")[value_idx] != '':
-                                    object_.update({self._titles[title_idx]: part.split(",")[value_idx]})
-                                    value_idx += 1
-                                    title_idx += 1
+                                if value != '':
+                                    object_.update({titles[0]: value})
+                                    titles.remove(titles[0])
                                 else:
-                                    object_.update({self._titles[title_idx]: part.split(",")[value_idx + 1]})
-                                    value_idx += 1
-                                    title_idx += 1
+                                    object_.update({titles[0]: value})
+                                    titles.remove(titles[0])
                             except IndexError:
                                 pass
                 else:
                     try:
-                        object_.update({self._titles[title_idx]: part})
-                        value_idx += 1
-                        title_idx += 1
+                        object_.update({titles[0]: part})
+                        titles.remove(titles[0])
                     except IndexError:
                         pass
             data.append(object_)

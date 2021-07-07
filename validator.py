@@ -10,12 +10,13 @@ class Validator(ABC):
 
 
 class CarsValidator(Validator):
-    def __init__(self, input_file):
+    def __init__(self, input_file, presenter):
         self._input_file = input_file
         self._lines = self.read()
         self._format_lines()
         self._titles = self.parse_titles()
         self._data = self.parse()
+        self._presenter = presenter
 
     def validate(self):
         self._validate_id()
@@ -110,27 +111,27 @@ class CarsValidator(Validator):
         prices = zip(range(len(bought_prices)), bought_prices, sold_prices)
         for index, bought_price, sold_price in prices:
             if bought_price < 0:
-                print(f"Validation error, line {index + 2} ('BOUGHT AT: PRICE' < 0)")
+                print(f"Validation error, line {index + 2}, 'BOUGHT AT: PRICE' < 0")
             if sold_price < 0:
-                print(f"Validation error, line {index + 2}  ('SOLD AT:PRICE' < 0)")
+                print(f"Validation error, line {index + 2}, 'SOLD AT:PRICE' < 0")
             if sold_price < bought_price:
-                print(f"Validation error, line {index + 2}  ('SOLD AT:PRICE' < 'BOUGHT AT: PRICE')")
+                print(f"Validation error, line {index + 2}, 'SOLD AT:PRICE' < 'BOUGHT AT: PRICE'")
 
     def _validate_volume(self):
         volumes = [int(volume) for volume in self["VOLUME"]]
         for index, volume in enumerate(volumes):
             if volume < 0:
-                print(f"Validation error, line {index + 2}  ('VOLUME' < 0)")
+                print(f"Validation error, line {index + 2}, 'VOLUME' < 0")
             if volume == 1900 or volume == 1.9:
-                print(f"Validation error, line {index + 2}  ('VOLUME' = 1900 or 1.9)")
+                print(f"Validation error, line {index + 2}, 'VOLUME' = 1900 or 1.9")
 
     def _validate_mileage(self):
         mileages = [int(mileage) for mileage in self["MILEAGE"]]
         for index, mileage in enumerate(mileages):
             if mileage < 0:
-                print(f"Validation error, line {index + 2}  ('MILEAGE' = 0)")
+                print(f"Validation error, line {index + 2}, 'MILEAGE' = 0")
             if mileage > 250:
-                print(f"Validation error, line {index + 2}  ('MILEAGE' > 250)")
+                print(f"Validation error, line {index + 2}, 'MILEAGE' > 250")
 
     def _validate_time(self):
         bought_when_dates = [datetime.datetime.strptime(bought_when, "%d/%m/%Y")
@@ -141,13 +142,13 @@ class CarsValidator(Validator):
         dates = zip(range(len(bought_when_dates)), bought_when_dates, sold_when_dates)
         for index, bought_when, sold_when in dates:
             if bought_when > sold_when:
-                print(f"Validation error, line {index + 2}  ('BOUGHT WHEN: DATE' > 'SOLD WHEN: DATE')")
+                print(f"Validation error, line {index + 2}, 'BOUGHT WHEN: DATE' > 'SOLD WHEN: DATE'")
 
     def _validate_model(self):
         models = [model for model in self["CAR MODEL"]]
         for index, model in enumerate(models):
             if len(model.split(",")) > 1:
-                print(f"Validation error, line {index + 2}  ('CAR MODEL' has substring)")
+                print(f"Validation error, line {index + 2}, 'CAR MODEL' has a substring")
 
     def __iter__(self):
         for line in self._data:

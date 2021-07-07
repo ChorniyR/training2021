@@ -1,3 +1,4 @@
+import argparse
 import datetime
 from abc import ABC, abstractmethod
 
@@ -84,7 +85,11 @@ class CarsValidator(Validator):
 
 
 if __name__ == '__main__':
-    reader = CSVDataReader(r"data/cars.csv")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input_file', help="path to *.csv file")
+    input_file = parser.parse_args().input_file
+
+    reader = CSVDataReader(input_file)
     presenter = reader.get_data_presenter()
     validator = CarsValidator(presenter)
     validator.validate()

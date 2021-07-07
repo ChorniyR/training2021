@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import re
 from abc import ABC, abstractmethod
 
 from csv_data_reader import CSVDataReader
@@ -24,18 +25,10 @@ class CarsValidator(Validator):
         self._validate_model()
 
     def _validate_id(self):
+        pattern = r"[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}"
         for index, value in enumerate(self._presenter["CAR ID"]):
-            part1, part2, part3, part4, part5 = value.split("-")
-            if len(part1) != 8:
-                print(f"Validation error, line {index + 2}, wrong length at '{part1}'")
-            if len(part2) != 4:
-                print(f"Validation error, line {index + 2}, wrong length at '{part2}'")
-            if len(part3) != 4:
-                print(f"Validation error, line {index + 2}, wrong length at '{part3}'")
-            if len(part4) != 4:
-                print(f"Validation error, line {index + 2}, wrong length at '{part4}'")
-            if len(part5) != 12:
-                print(f"Validation error, line {index + 2}, wrong length at '{part5}'")
+            if re.match(pattern, value) is None:
+                print(f"Validation error, line {index + 2}, invalid uuid")
 
     def _validate_price(self):
         bought_prices = [int(price) for price in self._presenter["BOUGHT AT: PRICE"]]

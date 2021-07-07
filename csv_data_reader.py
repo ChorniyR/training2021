@@ -1,7 +1,8 @@
 from itertools import islice
 from scv_data_presenter import CSVDataPresenter
 
-class CSVDataReader():
+
+class CSVDataReader:
     def __init__(self, input_file):
         self._input_file = input_file
         self._lines = self.read()

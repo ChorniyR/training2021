@@ -80,8 +80,3 @@ class CSVDataReader():
     def get_data_presenter(self):
         return CSVDataPresenter(self._data, self._titles)
 
-if __name__ == '__main__':
-    reader = CSVDataReader(r"data/cars.csv")
-    presenter = reader.get_data_presenter()
-    for data in presenter:
-        print(data)

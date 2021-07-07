@@ -28,6 +28,7 @@ class CarsValidator(Validator):
         self._validate_mileage()
         self._validate_time()
         self._validate_model()
+        self._validate_negatives()
 
     def _validate_id(self):
         pattern = r"[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}"
@@ -41,26 +42,18 @@ class CarsValidator(Validator):
 
         prices = zip(range(len(bought_prices)), bought_prices, sold_prices)
         for index, bought_price, sold_price in prices:
-            if bought_price < 0:
-                logging.info(f"Validation error, line {index + 2}, 'BOUGHT AT: PRICE' < 0")
-            if sold_price < 0:
-                logging.info(f"Validation error, line {index + 2}, 'SOLD AT:PRICE' < 0")
             if sold_price < bought_price:
                 logging.info(f"Validation error, line {index + 2}, 'SOLD AT:PRICE' < 'BOUGHT AT: PRICE'")
 
     def _validate_volume(self):
         volumes = [int(volume) for volume in self._presenter["VOLUME"]]
         for index, volume in enumerate(volumes):
-            if volume < 0:
-                logging.info(f"Validation error, line {index + 2}, 'VOLUME' < 0")
             if volume == 1900 or volume == 1.9:
                 logging.info(f"Validation error, line {index + 2}, 'VOLUME' = 1900 or 1.9")
 
     def _validate_mileage(self):
         mileages = [int(mileage) for mileage in self._presenter["MILEAGE"]]
         for index, mileage in enumerate(mileages):
-            if mileage < 0:
-                logging.info(f"Validation error, line {index + 2}, 'MILEAGE' = 0")
             if mileage > 250:
                 logging.info(f"Validation error, line {index + 2}, 'MILEAGE' > 250")
 
@@ -80,6 +73,13 @@ class CarsValidator(Validator):
         for index, model in enumerate(models):
             if len(model.split(",")) > 1:
                 logging.info(f"Validation error, line {index + 2}, 'CAR MODEL' has a substring")
+
+    def _validate_negatives(self):
+        titles = ["MILEAGE", "VOLUME", "VOLUME", "BOUGHT AT: PRICE", "SOLD AT:PRICE"]
+        for title in titles:
+            for index, value in enumerate(self._presenter[title]):
+                if int(value) < 0:
+                    logging.info(f"Validation error, line {index + 2}, {title} < 0")
 
 
 if __name__ == '__main__':
